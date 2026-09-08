@@ -10,38 +10,35 @@ function addMessage(text, sender) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function getBotResponse(input) {
-  const text = input.toLowerCase();
-
-  if (text.includes("bonjour") || text.includes("salut")) {
-    return "Bonjour ! Ravi de te parler. Comment vas-tu ?";
-  } else if (text.includes("qui es-tu") || text.includes("qui es tu")) {
-    return "Je suis QWantum AI, le pont vers un autre monde 🌌";
-  } else if (text.includes("merci")) {
-    return "Avec plaisir ! N'hésite pas si tu as d'autres questions.";
-  } else if (text.includes("ça va") || text.includes("ca va")) {
-    return "Je fonctionne parfaitement, merci ! Et toi ?";
-  } else {
-    return "Intéressant ! Peux-tu m'en dire plus ?";
+async function getBotResponse(input) {
+  try {
+    const response = await fetch("/.netlify/functions/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: input }),
+    });
+    const data = await response.json();
+    return data.reply;
+  } catch (error) {
+    return "Erreur de connexion à QWantum AI 😢";
   }
 }
 
-function sendMessage() {
+async function sendMessage() {
   const text = userInput.value.trim();
   if (text === "") return;
 
   addMessage(text, "user");
   userInput.value = "";
 
-  setTimeout(() => {
-    const response = getBotResponse(text);
-    addMessage(response, "bot");
-  }, 500);
+  addMessage("...", "bot"); // petit indicateur "en train d'écrire"
+  const lastMessage = chatBox.lastChild;
+
+  const response = await getBotResponse(text);
+  lastMessage.textContent = response;
 }
 
 sendBtn.addEventListener("click", sendMessage);
 userInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    sendMessage();
-  }
+  if (e.key === "Enter") sendMessage();
 });
