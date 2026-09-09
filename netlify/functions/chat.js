@@ -37,6 +37,9 @@ exports.handler = async (event) => {
     );
 
     const data = await response.json();
+
+console.log("Status API:", response.status);
+console.log("Réponse API:", JSON.stringify(data));
     const reply =
       data.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Désolé, je n'ai pas pu générer de réponse.";
